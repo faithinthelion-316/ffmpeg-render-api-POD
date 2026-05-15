@@ -2026,9 +2026,10 @@ async def render_video(data: RenderRequest):
     voice_duration = round(get_audio_duration(voice_audio_path), 3)
     final_duration = round(voice_duration + END_TAIL_DURATION, 3)
 
-    # Temporary fallback. The real CTA start will be recalculated from the
-    # ElevenLabs word alignment using the actual call_to_action text.
-    cta_start_time = round(max(0.0, voice_duration - 2.4), 3)
+    # POD no-card mode: captions must continue until the final spoken word.
+    # Do not compute a CTA cutoff, because there is no CTA card that should
+    # suppress subtitles at the end.
+    cta_start_time = None
 
     # POD render: music is optional. If /app/music/background.mp3 exists, mix it quietly.
     # If it does not exist, preserve the voice audio only.
@@ -2095,28 +2096,21 @@ async def render_video(data: RenderRequest):
         f"[{job_id}] voice_duration={voice_duration:.2f}s, "
         f"final_duration={final_duration:.2f}s, "
         f"final_audio_duration={final_audio_duration:.2f}s, "
-        f"cta_start_time={cta_start_time:.2f}s",
+        "cta_start_time=None (POD no-card mode; captions continue to end)",
         flush=True
     )
 
     adjusted_alignment = speed_up_alignment(data.normalized_alignment, speed_factor)
     words = build_words_from_alignment(adjusted_alignment)
 
-    cta_start_time = round(
-        find_sequence_start_in_words(
-            words=words,
-            target_text=effective_call_to_action,
-            fallback_time=max(0.0, voice_duration - 2.4)
-        ),
-        3
-    )
-
+    # Important: keep cta_start_time=None. In POD mode there is no final CTA
+    # card, so subtitles must not be cut off near the last 2-3 seconds.
     cues = group_words_into_cues(words, max_words=3, max_chars=22)
     truth_punch_window = None
     write_ass_subtitles(
         subtitles_path,
         cues,
-        cta_start_time=cta_start_time,
+        cta_start_time=None,
         truth_punch_window=truth_punch_window,
     )
 
