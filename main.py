@@ -102,21 +102,21 @@ IMPACT_WORDS = {
     "HUMANA",
     "HUMANOS",
     "REAL",
-    "SINTÉTICO",
+    "SINTÃTICO",
     "SINTETICO",
     "ILEGAL",
     "PROHIBIDO",
-    "VENDIÓ",
+    "VENDIÃ",
     "VENDIO",
     "VENDIDA",
     "VENDER",
-    "COMPRÓ",
+    "COMPRÃ",
     "COMPRO",
-    "BORRÓ",
+    "BORRÃ",
     "BORRO",
-    "PERDIÓ",
+    "PERDIÃ",
     "PERDIO",
-    "OLVIDÓ",
+    "OLVIDÃ",
     "OLVIDO",
     "AMOR",
     "MADRE",
@@ -127,7 +127,7 @@ IMPACT_WORDS = {
     "IDENTIDAD",
     "VIDA",
     "MUERTE",
-    "EMOCIÓN",
+    "EMOCIÃN",
     "EMOCION",
     "MENTIRA",
     "VERDAD",
@@ -136,7 +136,7 @@ IMPACT_WORDS = {
     "PISO",
     "DISTRITO",
     "ARCHIVO",
-    "CRÉDITO",
+    "CRÃDITO",
     "CREDITO",
     "NOVA",
 }
@@ -148,7 +148,7 @@ def normalize_token(value: str) -> str:
         c for c in unicodedata.normalize("NFD", text)
         if unicodedata.category(c) != "Mn"
     )
-    text = re.sub(r"[^A-ZÑ]+", "", text)
+    text = re.sub(r"[^A-ZÃ]+", "", text)
     return text
 
 
@@ -171,7 +171,7 @@ def escape_drawtext_value(value: str) -> str:
         .replace("\\", "\\\\")
         .replace(":", "\\:")
         .replace(",", "\\,")
-        .replace("'", "’")
+        .replace("'", "â")
         .replace("%", "\\%")
         .replace("[", "\\[")
         .replace("]", "\\]")
@@ -184,7 +184,7 @@ def escape_drawtext_value(value: str) -> str:
 
 def clean_display_text(value: str, max_words: int = 5) -> str:
     text = str(value or "").strip()
-    text = text.replace("“", "").replace("”", "").replace('"', "")
+    text = text.replace("â", "").replace("â", "").replace('"', "")
     text = re.sub(r"\s+", " ", text)
     text = text.upper()
 
@@ -326,33 +326,33 @@ def format_reference_stamp(value: str) -> str:
     Converts long world metadata into a short, safe stamp.
 
     Example:
-    NOVA LOS ANGELES · 2184 | LOVE CONTRACT DISTRICT
-    -> NOVA LOS ANGELES · 2184
+    NOVA LOS ANGELES Â· 2184 | LOVE CONTRACT DISTRICT
+    -> NOVA LOS ANGELES Â· 2184
     """
     text = str(value or "").strip()
     if not text:
         return ""
 
-    text = text.replace("—", "·").replace("–", "·")
+    text = text.replace("â", "Â·").replace("â", "Â·")
     text = re.sub(r"\s+", " ", text)
     text = text.split("|")[0].strip()
 
     year_match = re.search(r"\b(20\d{2}|21\d{2}|22\d{2}|23\d{2})\b", text)
     if year_match:
         year = year_match.group(1)
-        location = text[:year_match.start()].strip(" ·-:,/")
-        location = re.sub(r"\bYEAR\b", "", location, flags=re.IGNORECASE).strip(" ·-:,/")
+        location = text[:year_match.start()].strip(" Â·-:,/")
+        location = re.sub(r"\bYEAR\b", "", location, flags=re.IGNORECASE).strip(" Â·-:,/")
         if location:
-            text = f"{location} · {year}"
+            text = f"{location} Â· {year}"
         else:
             text = year
 
     text = text.upper()
-    text = re.sub(r"\s*[·\-:]\s*", " · ", text)
+    text = re.sub(r"\s*[Â·\-:]\s*", " Â· ", text)
     text = re.sub(r"\s+", " ", text).strip()
 
     if len(text) > 34:
-        text = text[:34].rstrip(" ·-:,/")
+        text = text[:34].rstrip(" Â·-:,/")
 
     return text
 
@@ -364,9 +364,9 @@ def clean_cta_display_text(value: str, max_chars: int = 76) -> str:
     It preserves useful CTA punctuation such as ':', '/', and '?'.
     """
     text = str(value or "").strip()
-    text = text.replace("“", "").replace("”", "").replace('"', "")
-    text = text.replace("¿", "").replace("¡", "")
-    text = text.replace("—", "-").replace("–", "-")
+    text = text.replace("â", "").replace("â", "").replace('"', "")
+    text = text.replace("Â¿", "").replace("Â¡", "")
+    text = text.replace("â", "-").replace("â", "-")
     text = re.sub(r"\s+", " ", text)
     text = text.upper().strip()
 
@@ -377,7 +377,7 @@ def clean_cta_display_text(value: str, max_chars: int = 76) -> str:
         r"^VOTA\b": "VOTE",
         r"^COMENTA\b": "COMMENT",
         r"^LO HARIAS\?": "WOULD YOU DO IT?",
-        r"^LO HARÍAS\?": "WOULD YOU DO IT?",
+        r"^LO HARÃAS\?": "WOULD YOU DO IT?",
     }
     for pattern, replacement in replacements.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
@@ -506,7 +506,7 @@ def extract_quoted_cta(call_to_action: str, hook: str = "", guion: str = "") -> 
     text = str(call_to_action or "")
     context = f"{call_to_action} {hook} {guion}".lower()
 
-    match = re.search(r"[“\"]([^”\"]{2,80})[”\"]", text)
+    match = re.search(r"[â\"]([^â\"]{2,80})[â\"]", text)
     if match:
         phrase = clean_cta_display_text(match.group(1), max_chars=48)
         if phrase:
@@ -603,25 +603,25 @@ def extract_truth_punch_text(guion: str) -> str:
         return "NO ERA DINERO"
 
     if "ciudad" in text or "sistema" in text:
-        return "LA CIUDAD COBRÓ"
+        return "LA CIUDAD COBRÃ"
 
     if "amor" in text or "pareja" in text:
-        return "AMOR SINTÉTICO"
+        return "AMOR SINTÃTICO"
 
     if "humano" in text or "real" in text:
-        return "SEGUÍA SIENDO HUMANO"
+        return "SEGUÃA SIENDO HUMANO"
 
     if "ilegal" in text or "prohibido" in text:
         return "ERA ILEGAL"
 
     if "madre" in text or "padre" in text or "familia" in text:
-        return "PERDIÓ SU ORIGEN"
+        return "PERDIÃ SU ORIGEN"
 
     if "cuerpo" in text or "rostro" in text or "identidad" in text:
-        return "CAMBIÓ SU IDENTIDAD"
+        return "CAMBIÃ SU IDENTIDAD"
 
     if "pobre" in text or "lujo" in text:
-        return "LA CIUDAD DIVIDIÓ"
+        return "LA CIUDAD DIVIDIÃ"
 
     return "NO ERA DINERO"
 
@@ -1421,8 +1421,8 @@ def validate_cta_for_render(call_to_action: str) -> None:
         raise HTTPException(
             status_code=400,
             detail={
-                "message": "call_to_action llegó vacío. Se recomienda enviar el CTA visual final fijo para POD.",
-                "expected_format": "SÍGUENOS PARA MÁS PALABRA DE DIOS CLARA",
+                "message": "call_to_action llegÃ³ vacÃ­o. Se recomienda enviar el CTA visual final fijo para POD.",
+                "expected_format": "SÃGUENOS PARA MÃS PALABRA DE DIOS CLARA",
             }
         )
 
@@ -1432,7 +1432,7 @@ def validate_cta_for_render(call_to_action: str) -> None:
             detail={
                 "message": "call_to_action es demasiado corto para renderizar CTA visual confiable.",
                 "call_to_action": text,
-                "expected_format": "SÍGUENOS PARA MÁS PALABRA DE DIOS CLARA",
+                "expected_format": "SÃGUENOS PARA MÃS PALABRA DE DIOS CLARA",
             }
         )
 
@@ -1463,164 +1463,6 @@ def speed_up_alignment(alignment: dict, speed: float) -> dict:
             float(x) / speed for x in alignment.get("character_end_times_seconds", [])
         ],
     }
-
-
-
-AUDIO_TAG_PHRASE_PATTERNS = [
-    ["TONO", "SERIO"],
-    ["TONO", "PASTORAL"],
-    ["TONO", "INTIMO"],
-    ["TONO", "ÍNTIMO"],
-    ["TONO", "BAJO"],
-    ["ENFASIS", "SUAVE"],
-    ["ÉNFASIS", "SUAVE"],
-    ["PAUSA", "BREVE"],
-    ["PAUSA", "CORTA"],
-    ["PAUSA", "LARGA"],
-    ["MAS", "BAJO"],
-    ["MÁS", "BAJO"],
-    ["SUSURRO"],
-    ["RESPIRA"],
-    ["RESPIRACION"],
-    ["RESPIRACIÓN"],
-]
-
-
-def strip_audio_tags_from_text(value: str) -> str:
-    """
-    Removes delivery/audio directions before they can become subtitles.
-
-    ElevenLabs v3 can interpret bracketed delivery notes, but when we request
-    timestamps those notes can leak into the alignment and then into captions.
-    The renderer is the final guardrail: captions must contain only spoken script.
-    """
-    text = str(value or "")
-    text = re.sub(r"\[[^\]\n]{1,80}\]", " ", text)
-    text = re.sub(r"\([^\)\n]*(tono|pausa|énfasis|enfasis|susurro|respira)[^\)\n]*\)", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
-
-
-def strip_audio_tags_from_alignment(alignment: dict) -> dict:
-    """
-    Removes characters inside bracketed audio tags from ElevenLabs alignment.
-    Keeps timestamps for the actual spoken text intact.
-    """
-    characters = alignment.get("characters", []) or []
-    starts = alignment.get("character_start_times_seconds", []) or []
-    ends = alignment.get("character_end_times_seconds", []) or []
-
-    new_chars = []
-    new_starts = []
-    new_ends = []
-    inside_square_tag = False
-    inside_round_tag = False
-    round_buffer = []
-
-    for ch, st, en in zip(characters, starts, ends):
-        ch_str = str(ch)
-
-        if ch_str == "[":
-            inside_square_tag = True
-            continue
-        if ch_str == "]":
-            inside_square_tag = False
-            continue
-        if inside_square_tag:
-            continue
-
-        if ch_str == "(":
-            inside_round_tag = True
-            round_buffer = []
-            continue
-        if ch_str == ")" and inside_round_tag:
-            tag_text = "".join(round_buffer).lower()
-            inside_round_tag = False
-            round_buffer = []
-            if any(token in tag_text for token in ["tono", "pausa", "énfasis", "enfasis", "susurro", "respira"]):
-                continue
-            continue
-        if inside_round_tag:
-            round_buffer.append(ch_str)
-            continue
-
-        new_chars.append(ch_str)
-        new_starts.append(st)
-        new_ends.append(en)
-
-    return {
-        "characters": new_chars,
-        "character_start_times_seconds": new_starts,
-        "character_end_times_seconds": new_ends,
-    }
-
-
-def filter_caption_words(words: list) -> list:
-    """Drops leaked delivery-direction phrases such as TONO SERIO or PAUSA BREVE."""
-    if not words:
-        return []
-
-    clean_words = []
-    i = 0
-
-    while i < len(words):
-        matched = False
-
-        for pattern in AUDIO_TAG_PHRASE_PATTERNS:
-            pattern_norm = [normalize_token(x) for x in pattern]
-            candidate_norm = [
-                normalize_token(words[i + j].get("word", ""))
-                for j in range(len(pattern))
-                if i + j < len(words)
-            ]
-
-            if len(candidate_norm) == len(pattern_norm) and candidate_norm == pattern_norm:
-                i += len(pattern)
-                matched = True
-                break
-
-        if matched:
-            continue
-
-        word_value = str(words[i].get("word", "")).strip()
-        if word_value in {"[", "]", "(", ")", "{", "}"}:
-            i += 1
-            continue
-
-        # Remove single-token bracket remnants such as [TONO or SERIO]
-        if word_value.startswith("[") or word_value.endswith("]"):
-            i += 1
-            continue
-
-        clean_words.append(words[i])
-        i += 1
-
-    return clean_words
-
-
-def clamp_caption_word_timings(words: list, max_word_duration: float = 0.72) -> list:
-    """Prevents one malformed timestamp from freezing a caption for several seconds."""
-    cleaned = []
-    for item in words:
-        try:
-            start = float(item.get("start", 0.0))
-            end = float(item.get("end", start + 0.25))
-        except Exception:
-            continue
-
-        if end <= start:
-            end = start + 0.25
-
-        if end - start > max_word_duration:
-            end = start + max_word_duration
-
-        cleaned.append({
-            "word": str(item.get("word", "")),
-            "start": start,
-            "end": end,
-        })
-
-    return cleaned
 
 
 def build_words_from_alignment(alignment: dict) -> list:
@@ -1678,20 +1520,20 @@ def build_words_from_alignment(alignment: dict) -> list:
 def tokenize_for_alignment_match(text: str) -> list[str]:
     """
     Converts text into normalized word tokens for matching against ElevenLabs alignment.
-    Works with any CTA wording: Comenta, Sígueme, Escribe, Guarda, Ora, etc.
+    Works with any CTA wording: Comenta, SÃ­gueme, Escribe, Guarda, Ora, etc.
     """
     raw = str(text or "").strip()
 
     if not raw:
         return []
 
-    raw = raw.replace("“", " ").replace("”", " ").replace('"', " ")
+    raw = raw.replace("â", " ").replace("â", " ").replace('"', " ")
     raw = "".join(
         c for c in unicodedata.normalize("NFD", raw)
         if unicodedata.category(c) != "Mn"
     )
     raw = raw.upper()
-    raw = re.sub(r"[^A-ZÑ0-9\s]+", " ", raw)
+    raw = re.sub(r"[^A-ZÃ0-9\s]+", " ", raw)
     raw = re.sub(r"\s+", " ", raw).strip()
 
     tokens = []
@@ -1714,9 +1556,9 @@ def find_sequence_start_in_words(
     Finds the start time of target_text inside ElevenLabs word alignment.
 
     This is CTA-wording agnostic:
-    - Comenta “...”
-    - Sígueme si...
-    - Escribe “...”
+    - Comenta â...â
+    - SÃ­gueme si...
+    - Escribe â...â
     - Guarda este video...
     - Ora conmigo...
 
@@ -1757,7 +1599,7 @@ def find_sequence_start_in_words(
                 except Exception:
                     return fallback_time
 
-    quoted_match = re.search(r"[“\"]([^”\"]{2,80})[”\"]", str(target_text or ""))
+    quoted_match = re.search(r"[â\"]([^â\"]{2,80})[â\"]", str(target_text or ""))
     if quoted_match:
         quoted_tokens = tokenize_for_alignment_match(quoted_match.group(1))
 
@@ -1864,16 +1706,100 @@ def group_words_into_cues(words: list, max_words: int = 4, max_chars: int = 26) 
         if cue["end"] - cue["start"] < 0.35:
             cue["end"] = cue["start"] + 0.35
 
-        # Defensive cap: captions should pulse quickly. If ElevenLabs returns
-        # a malformed long timestamp, do not freeze a phrase for several seconds.
-        if cue["end"] - cue["start"] > 1.65:
-            cue["end"] = cue["start"] + 1.65
-
-        for word in cue.get("words", []):
-            if float(word.get("end", 0)) > cue["end"]:
-                word["end"] = cue["end"]
-
     return cues
+
+
+def cue_signature(cue: dict) -> str:
+    """Normalized cue signature used only to collapse accidental duplicate captions."""
+    text = str(cue.get("text", ""))
+    text = "".join(
+        c for c in unicodedata.normalize("NFD", text)
+        if unicodedata.category(c) != "Mn"
+    )
+    text = re.sub(r"[^A-ZÃ0-9\s]+", " ", text.upper())
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def normalize_cues_for_ass_render(cues: list, final_duration: float | None = None) -> list:
+    """
+    Defensive caption normalization for ElevenLabs v3 alignments.
+
+    Root issue fixed here:
+    ElevenLabs normalized_alignment can occasionally return cue timings that overlap
+    or repeat a short phrase. The original renderer then writes multiple ASS events
+    at the same timestamp, which visually stacks captions like:
+    "ÃL NO TE" / "ÃL NO TE".
+
+    This function keeps the original TikTok word-highlight renderer, but guarantees:
+    - cues are monotonic;
+    - exact adjacent duplicates are collapsed;
+    - a short cue cannot freeze on screen for several seconds;
+    - no global delay is added.
+    """
+    if not cues:
+        return []
+
+    sorted_cues = sorted(cues, key=lambda c: (float(c.get("start", 0.0)), float(c.get("end", 0.0))))
+    cleaned = []
+
+    for raw in sorted_cues:
+        try:
+            start = max(0.0, float(raw.get("start", 0.0)))
+            end = max(start + 0.35, float(raw.get("end", start + 0.35)))
+        except Exception:
+            continue
+
+        if final_duration is not None:
+            end = min(end, float(final_duration))
+            if start >= float(final_duration):
+                continue
+
+        words = raw.get("words", []) or []
+        word_count = max(1, len(words))
+
+        # Captions are short kinetic blocks. Long cue durations create the visible freeze.
+        max_duration = min(1.45, max(0.55, 0.34 * word_count + 0.28))
+        if end - start > max_duration:
+            end = start + max_duration
+
+        cue = dict(raw)
+        cue["start"] = start
+        cue["end"] = end
+        sig = cue_signature(cue)
+        if not sig:
+            continue
+
+        if cleaned:
+            prev = cleaned[-1]
+            prev_sig = cue_signature(prev)
+            prev_start = float(prev["start"])
+            prev_end = float(prev["end"])
+
+            # Collapse accidental repeated captions from alignment glitches.
+            # Only collapse if the same phrase is adjacent/overlapping, so real repeated words remain possible when separated.
+            if sig == prev_sig and start <= prev_end + 0.18:
+                prev["end"] = max(prev_end, min(end, prev_start + max_duration))
+                continue
+
+            # Remove overlap between different cues. Prefer clipping the previous cue;
+            # if that would make it unreadable, push the current cue after it.
+            if start < prev_end:
+                clipped_prev_end = start - 0.02
+                if clipped_prev_end >= prev_start + 0.30:
+                    prev["end"] = clipped_prev_end
+                else:
+                    start = prev_end + 0.02
+                    end = max(end, start + 0.35)
+                    if final_duration is not None:
+                        end = min(end, float(final_duration))
+                    cue["start"] = start
+                    cue["end"] = end
+
+        if cue["end"] > cue["start"] + 0.25:
+            cleaned.append(cue)
+
+    return cleaned
 
 
 def build_line_groups(word_items: list, max_line_chars: int = 16) -> list:
@@ -2099,7 +2025,6 @@ def health():
         "voice_starts_at": "0.00s",
         "sfx_enabled": False,
         "render_style": "pod_tiktok_avatar_captioned",
-        "caption_guardrails": "strip_audio_tags_and_cap_long_timestamps",
     }
 
 
@@ -2152,10 +2077,10 @@ async def render_video(data: RenderRequest):
     try:
         audio_bytes = base64.b64decode(data.audio_base64)
     except Exception:
-        raise HTTPException(status_code=400, detail="audio_base64 inválido")
+        raise HTTPException(status_code=400, detail="audio_base64 invÃ¡lido")
 
     if not audio_bytes:
-        raise HTTPException(status_code=400, detail="audio_base64 llegó vacío")
+        raise HTTPException(status_code=400, detail="audio_base64 llegÃ³ vacÃ­o")
 
     with open(input_audio_path, "wb") as f:
         f.write(audio_bytes)
@@ -2252,7 +2177,7 @@ async def render_video(data: RenderRequest):
         raise HTTPException(
             status_code=500,
             detail={
-                "message": "El audio final quedó más corto que el video. Se cancela para evitar cola en silencio.",
+                "message": "El audio final quedÃ³ mÃ¡s corto que el video. Se cancela para evitar cola en silencio.",
                 "voice_duration": voice_duration,
                 "final_duration": final_duration,
                 "final_audio_duration": final_audio_duration,
@@ -2268,16 +2193,13 @@ async def render_video(data: RenderRequest):
         flush=True
     )
 
-    # Final caption guardrail: strip any delivery tags that leaked into ElevenLabs alignment.
-    safe_alignment = strip_audio_tags_from_alignment(data.normalized_alignment)
-    adjusted_alignment = speed_up_alignment(safe_alignment, speed_factor)
+    adjusted_alignment = speed_up_alignment(data.normalized_alignment, speed_factor)
     words = build_words_from_alignment(adjusted_alignment)
-    words = filter_caption_words(words)
-    words = clamp_caption_word_timings(words)
 
     # Important: keep cta_start_time=None. In POD mode there is no final CTA
     # card, so subtitles must not be cut off near the last 2-3 seconds.
     cues = group_words_into_cues(words, max_words=3, max_chars=22)
+    cues = normalize_cues_for_ass_render(cues, final_duration=final_duration)
     truth_punch_window = None
     write_ass_subtitles(
         subtitles_path,
@@ -2493,7 +2415,7 @@ async def render_video(data: RenderRequest):
         raise HTTPException(
             status_code=500,
             detail={
-                "message": "El video no se generó",
+                "message": "El video no se generÃ³",
                 "render_mode": render_mode,
             }
         )
